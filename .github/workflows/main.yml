@@ -24,10 +24,11 @@ jobs:
     - name: Check for Code Changes
       id: check_changes
       run: |
-        git diff --exit-code || echo "changes"
-
+        git diff --exit-code 
+      continue-on-error: true  # Allow the workflow to continue even if there are changes
+      
     - name: Commit and Push Changes
-      if: steps.check_changes.outputs.changes == 'changes'
+      if: steps.check_changes.outcome == 'failure'
       run: |
         git config --local user.name "github-actions"
         git config --local user.email "github-actions@github.com"
