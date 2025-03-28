@@ -1,7 +1,6 @@
 # This is an example GitHub Actions workflow that will allow you to build your project with every push or pull request.
 # For more information, see:
 # https://docs.github.com/actions/reference/workflow-syntax-for-github-actions
-
 name: Rust Code Quality
 
 on:
@@ -16,9 +15,28 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     steps:
     - uses: actions/checkout@v2
-    - name: Check Cargo FMT
-      run: cargo fmt -- --check
+      with:
+        fetch-depth: 0  # Fetch all history for all branches and tags
+
+    - name: Format Code with Cargo FMT
+      run: cargo fmt
+
+    - name: Check for Code Changes
+      id: check_changes
+      run: |
+        git diff --exit-code || echo "changes"
+
+    - name: Commit and Push Changes
+      if: steps.check_changes.outputs.changes == 'changes'
+      run: |
+        git config --local user.name "github-actions"
+        git config --local user.email "github-actions@github.com"
+        git add .
+        git commit -m "Format code with cargo fmt"
+        git push
+
     - name: Run Cargo Tests
       run: cargo test
+
     - name: Make sure Rust builds correctly
       run: cargo build
